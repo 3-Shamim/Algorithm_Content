@@ -1,8 +1,9 @@
 package main;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,11 +17,104 @@ import java.util.Stack;
 public class Main {
 
     public Main() {
-//        String infix = "(A*B)+(C/D)";
-//        String infix = "A*(B+C)/D";
-        String infix = "A*(B+C/D)";
-        System.out.println(infix);
-        System.out.println(infixToPostfix(infix));
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Choose your input type:\n" + "1. For console input: \n" + "2. For file input:");
+        int type = scanner.nextInt();
+        scanner.nextLine();
+        switch (type) {
+            case 1: {
+                switch (conversionType(scanner)) {
+                    case 1: {
+                        System.out.println("Enter your infix expression:");
+                        scanner.nextLine();
+                        String infix = scanner.nextLine();
+                        System.out.println("Prefix:");
+                        System.out.println(infixToPrefix(infix));
+                        break;
+                    }
+                    case 2: {
+                        System.out.println("Enter your infix expression:");
+                        scanner.nextLine();
+                        String infix = scanner.nextLine();
+                        System.out.println("Postfix:");
+                        System.out.println(infixToPostfix(infix));
+                        break;
+                    }
+                    default:
+                        System.out.println("Enter a valid input.txt.");
+                }
+                break;
+            }
+            case 2: {
+                File file = new File("input.txt");
+                if (file.exists()) {
+                    getInfixExpressionFromFileAndConvert(scanner);
+                } else {
+                    System.out.println("input.txt file not exist. Please create your input.txt file in root path.");
+                }
+                break;
+            }
+            default:
+                System.out.println("Enter a valid input.txt.");
+
+        }
+
+        scanner.close();
+    }
+
+    private void getInfixExpressionFromFileAndConvert(Scanner scanner) {
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile("input.txt", "r")) {
+            if (randomAccessFile.length() != 0) {
+                switch (conversionType(scanner)) {
+                    case 1: {
+                        String infix;
+                        System.out.println("Prefix:");
+                        while ((infix = randomAccessFile.readLine()) != null) {
+                            System.out.println(infixToPrefix(infix));
+                        }
+                        break;
+                    }
+                    case 2: {
+                        String infix;
+                        System.out.println("Postfix:");
+                        while ((infix = randomAccessFile.readLine()) != null) {
+                            System.out.println(infixToPostfix(infix));
+                        }
+                        break;
+                    }
+                    default:
+                        System.out.println("Enter a valid input.txt.");
+                }
+            } else {
+                System.out.println("There is no expression in your file. Please enter an infix expression.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int conversionType(Scanner scanner) {
+        System.out.println("1. Infix to Prefix:\n" + "2. Infix to Postfix:");
+        return scanner.nextInt();
+    }
+
+    private String infixToPrefix(String infix) {
+        String reverse = reverseString(infix);
+        String postfix = infixToPostfix(reverse);
+        return reverseString(postfix);
+    }
+
+    private String reverseString(String infix) {
+        String result = "";
+        for (int i = infix.length() - 1; i >= 0; i--) {
+            if (infix.charAt(i) == '(' || infix.charAt(i) == ')') {
+                if (infix.charAt(i) == '(') result += ")";
+                else if (infix.charAt(i) == ')') result += "(";
+            } else {
+                result += charToString(infix.charAt(i));
+            }
+        }
+        return result;
     }
 
     private String infixToPostfix(String infix) {
@@ -115,7 +209,11 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        new Main();
+        try {
+            new Main();
+        } catch (Exception e) {
+            System.out.println("Please Enter Valid Input. Input not match. Please take help from input.txt above text.");
+        }
     }
 
     enum Priority {
